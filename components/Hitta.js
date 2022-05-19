@@ -6,13 +6,20 @@ import { Base, Typography, Forms, Unique } from "../styles"
 
 export default function Hitta({ navigation }) {
   const [travel, setTravel] = React.useState({})
+  const [from, setFrom] = React.useState({})
+  const [to, setTo] = React.useState({})
 
   function swap() {
-    setTravel({ from: travel.to, to: travel.from})
+    setTravel({ from: travel.to, to: travel.from })
   }
 
+  fromFocus = () => setFrom({color: true})
+  fromBlur = () => setFrom({color: false})
+  toFocus = () => setTo({color: true})
+  toBlur = () => setTo({color: false})
+
   return (
-    <SafeAreaView style={[{ ...Base.center },{ marginBottom: 20 }]}>
+    <SafeAreaView style={[{ ...Base.center }, { marginBottom: 20 }]}>
       <StatusBar barStyle="light-content" backgroundColor="rgb(55, 0, 180)" />
       <Text style={[{ ...Typography.header }, { ...Typography.center }]}>
         För vilken sträcka vill du hitta försenade tåg?
@@ -20,17 +27,37 @@ export default function Hitta({ navigation }) {
       <View style={{ ...Base.row }}>
         <View style={{ ...Base.column }}>
           <TextInput
-            style={{ ...Forms.input }}
+            onFocus={fromFocus}
+            onBlur={fromBlur}
+            style={[{ ...Forms.input }, {
+              borderBottomColor: from.color
+                ? 'rgb(20, 210, 190)'
+                : 'rgb(0, 0, 0)',
+              borderBottomWidth: from.color
+              ? 2
+              : 1,
+            }]}
+            selectionColor={'rgb(20, 210, 190)'}
             onChangeText={(fromChange) => {
-              setTravel({ ...travel, from: fromChange})
+              setTravel({ ...travel, from: fromChange })
             }}
             value={travel?.from}
             placeholder="Avg. station"
           />
           <TextInput
-            style={{ ...Forms.input }}
+            onFocus={toFocus}
+            onBlur={toBlur}
+            style={[{ ...Forms.input }, {
+              borderBottomColor: to.color
+                ? 'rgb(20, 210, 190)'
+                : 'rgb(0, 0, 0)',
+              borderBottomWidth: to.color
+              ? 2
+              : 1,
+            }]}
+            selectionColor={'rgb(20, 210, 190)'}
             onChangeText={(toChange) => {
-              setTravel({ ...travel, to: toChange})
+              setTravel({ ...travel, to: toChange })
             }}
             value={travel?.to}
             placeholder="Ank. station"
