@@ -13,3 +13,28 @@ export const sok = {
     backgroundColor: 'rgb(220, 220, 220)',
     textAlignVertical: 'center'
 }
+
+export const container = {
+
+    flex: 1,
+
+    paddingTop: 100,
+
+    backgroundColor: '#ecf0f1',
+
+    padding: 8,
+
+}
+
+export const item = {
+    justifyContent: 'center',
+    height: '20%',
+}
+
+export const rowText = {
+    color: 'rgb(0, 0, 0)',
+    fontSize: 20,
+    marginStart: 20,
+    borderColor: '#FAFAFA'
+
+}

@@ -8,3 +8,10 @@ export const input = {
     borderRadius: 3,
     width: 190
 }
+
+export const flatListItem = {
+    padding: 5,
+    margin: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: 5
+}
