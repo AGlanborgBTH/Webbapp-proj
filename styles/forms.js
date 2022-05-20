@@ -9,9 +9,19 @@ export const input = {
     width: 190
 }
 
+export const flatList = {
+    position: 'absolute',
+    zIndex: 1,
+    top: '100%',
+    width: '100%',
+    backgroundColor: 'rgb(240, 240, 240)',
+    elevation: 10,
+    borderRadius: 1,
+    marginLeft: 3,
+    flex: 1,
+    overflow: 'scroll'
+}
+
 export const flatListItem = {
-    padding: 5,
-    margin: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: 5
+    padding: 10
 }
