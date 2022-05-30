@@ -15,15 +15,10 @@ export const sok = {
 }
 
 export const container = {
-
     flex: 1,
-
     paddingTop: 100,
-
     backgroundColor: '#ecf0f1',
-
     padding: 8,
-
 }
 
 export const item = {
@@ -36,5 +31,16 @@ export const rowText = {
     fontSize: 20,
     marginStart: 20,
     borderColor: '#FAFAFA'
+}
 
+export const sena = {
+    color: 'rgb(115, 115, 115)'
+}
+
+export const allContainer = {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingRight: 38,
+    paddingBottom: 12
 }

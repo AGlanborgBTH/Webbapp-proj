@@ -3,91 +3,30 @@ import { View, Text, StatusBar, TextInput, Pressable, FlatList, TouchableOpacity
 import { IconButton } from 'react-native-paper';
 import SafeAreaView from 'react-native-safe-area-view';
 import { Base, Typography, Forms, Unique } from "../styles"
-import config from "../config/config.json"
-import { showMessage } from "react-native-flash-message";
 
-async function getStations() {
-  const result = await requestStations()
-
-  return makeList(result)
-}
-
-async function requestStations() {
-  const content = "<REQUEST>" +
-    `<LOGIN authenticationkey='${config.authenticationkey}'/>` +
-    "<QUERY objecttype='TrainStation' schemaversion='1.4'>" +
-    "<FILTER/>" +
-    "<INCLUDE>Prognosticated</INCLUDE>" +
-    "<INCLUDE>AdvertisedLocationName</INCLUDE>" +
-    "<INCLUDE>Deleted</INCLUDE>" +
-    "<INCLUDE>Advertised</INCLUDE>" +
-    "<INCLUDE>Geometry.SWEREF99TM</INCLUDE>" +
-    "<INCLUDE>Geometry.WGS84</INCLUDE>" +
-    "<INCLUDE>LocationSignature</INCLUDE>" +
-    "</QUERY>" +
-    "</REQUEST>";
-
-  try {
-    const response = await fetch(`https://api.trafikinfo.trafikverket.se/v2/data.json`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/xml'
-      },
-      body: content
-    });
-    const result = await response.json();
-
-    return result["RESPONSE"]["RESULT"][0]["TrainStation"];
-  } catch (error) {
-    console.log("Could not request Trainstaions")
-  }
-}
-
-function makeList(result) {
-  let list = []
-
-  result.forEach((station) => {
-    if (!station.Deleted && station.Advertised) {
-      list.push({
-        name: station.AdvertisedLocationName,
-        signature: station.LocationSignature,
-        geometry1: station.Geometry.SWEREF99TM,
-        geometry2: station.Geometry.WGS84
-      })
-    }
-  })
-  return list
-}
-
-export default function Hitta({ navigation }) {
+export default function Hitta({ navigation, stations, setStationFrom, setStationTo, getTimeTable, timeTable }) {
   const [travel, setTravel] = React.useState({})
   const [color, setColor] = React.useState({})
   const [autoCompleteTo, setAutoCompleteTo] = React.useState()
   const [autoCompleteFrom, setAutoCompleteFrom] = React.useState()
-  const [stations, setStations] = React.useState([])
-  let count = 0
-
-  React.useEffect(() => {
-    getStations().then(setStations)
-  }, [count])
 
   function swap() {
     setTravel({ from: travel.to, to: travel.from })
   }
 
   fromFocus = () => {
-    setColor({ ...color, from: true})
+    setColor({ ...color, from: true })
     setAutoCompleteTo([])
   }
   fromBlur = () => {
-    setColor({ ...color, from: false})
+    setColor({ ...color, from: false })
   }
   toFocus = () => {
-    setColor({ ...color, to: true})
+    setColor({ ...color, to: true })
     setAutoCompleteFrom([])
   }
   toBlur = () => {
-    setColor({ ...color, to: false})
+    setColor({ ...color, to: false })
   }
 
   function handleTextEvent(value, func) {
@@ -104,7 +43,7 @@ export default function Hitta({ navigation }) {
     }
   }
 
-  function trySearch() {
+  async function trySearch() {
     let fromSignature = ""
     let toSignature = ""
 
@@ -117,19 +56,18 @@ export default function Hitta({ navigation }) {
     })
 
     if (fromSignature != "" && toSignature != "") {
-      navigation.navigate("Sena", {
-        travelFrom: fromSignature,
-        travelTo: toSignature,
-        travelFromName: travel.from,
-        travelToName: travel.to
-      })
-    } else {
-      showMessage({
-        message: "Sök fel",
-        description: "Avg.- eller Ank.-station är skriven fel",
-        type: "warning",
-    });
+      setStationFrom({signature: fromSignature, name: travel.from})
+      setStationTo({signature: toSignature, name: travel.to})
     }
+
+    await getTimeTable(fromSignature, toSignature)
+  }
+
+  async function trySok() {
+    setAutoCompleteFrom([])
+    setAutoCompleteTo([])
+    await trySearch()
+    navigation.navigate("Sena")
   }
 
   return (
@@ -238,9 +176,7 @@ export default function Hitta({ navigation }) {
           <Pressable
             style={[{ ...Unique.sok }, { ...Base.center }]}
             onPress={() => {
-              trySearch()
-              setAutoCompleteFrom([])
-              setAutoCompleteTo([])
+              trySok()
             }}
           >
             <Text
