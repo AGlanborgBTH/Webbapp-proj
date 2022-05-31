@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import SafeAreaView from 'react-native-safe-area-view';
 import Hitta from "./components/Hitta"
 import Sena from "./components/Sena"
+import Karta from "./components/Karta"
 import { Base } from "./styles"
 import config from "./config/config.json"
 
@@ -13,7 +14,7 @@ const Stack = createNativeStackNavigator();
 async function getStations() {
   const result = await requestStations()
 
-  return makeStationsList(result)
+  return makeList(result)
 }
 
 async function requestStations() {
@@ -45,51 +46,41 @@ async function requestStations() {
   }
 }
 
-function makeStationsList(result) {
+function makeList(result) {
   let list = []
 
-  result.forEach((station) => {
-    if (!station.Deleted && station.Advertised) {
-      list.push({
-        name: station.AdvertisedLocationName,
-        signature: station.LocationSignature
-      })
+  result.forEach((result) => {
+    if (!result.Deleted && result.Advertised) {
+      list.push(result)
     }
   })
+
   return list
 }
 
 export default function App() {
   const [stations, setStations] = React.useState([])
-  const [timeTable, setTimeTable] = React.useState()
-  const [stationFrom, setStationFrom] = React.useState({})
-  const [stationTo, setStationTo] = React.useState({})
-  let count = 0
+  const [timeTable, setTimeTable] = React.useState([])
 
   React.useEffect(() => {
     getStations().then(setStations)
-  }, [count])
+  }, [])
 
   async function getTimeTable(from, to) {
     const result = await requestTimeTable(from, to, "Avgang")
 
-    const list = makeTimeTableList(result)
-
-    setTimeTable(list)
+    setTimeTable(makeList(result))
   }
 
   async function requestTimeTable(signature, to, activity) {
-    console.log(signature, to, activity)
     const content = "<REQUEST>" +
       `<LOGIN authenticationkey='${config.authenticationkey}'/>` +
       "<QUERY objecttype='TrainAnnouncement' schemaversion='1.6'>" +
       "<FILTER>" +
       "<AND>" +
       "<AND>" +
-      "<GT name='AdvertisedTimeAtLocation' " +
-      "value='$dateadd(-04:0:00)' />" +
-      "<LT name='AdvertisedTimeAtLocation' " +
-      "value='$dateadd(20:00:00)' />" +
+      "<GT name='AdvertisedTimeAtLocation' value='$dateadd(-05:00:00)' />" +
+      "<LT name='AdvertisedTimeAtLocation' value='$dateadd(20:00:00)' />" +
       "</AND>" +
       "<EQ name='LocationSignature' value='" + signature + "' />" +
       "<EQ name='ActivityType' value='" + activity + "' />" +
@@ -97,12 +88,15 @@ export default function App() {
       "<IN name='ViaToLocation.LocationName' value='" + to + "' />" +
       "</AND>" +
       "</FILTER>" +
+      "<INCLUDE>ActivityId</INCLUDE>" +
       "<INCLUDE>ActivityType</INCLUDE>" +
       "<INCLUDE>Advertised</INCLUDE>" +
       "<INCLUDE>AdvertisedTrainIdent</INCLUDE>" +
       "<INCLUDE>AdvertisedTimeAtLocation</INCLUDE>" +
       "<INCLUDE>Canceled</INCLUDE>" +
       "<INCLUDE>EstimatedTimeAtLocation</INCLUDE>" +
+      "<INCLUDE>EstimatedTimeIsPreliminary</INCLUDE>" +
+      "<INCLUDE>LocationSignature</INCLUDE>" +
       "<INCLUDE>PlannedEstimatedTimeAtLocation</INCLUDE>" +
       "<INCLUDE>PlannedEstimatedTimeAtLocationIsValid</INCLUDE>" +
       "</QUERY>" +
@@ -118,27 +112,11 @@ export default function App() {
       });
 
       const result = await response.json();
-      console.log(result["RESPONSE"]["RESULT"])
+      console.log(result["RESPONSE"]["RESULT"][0]["TrainAnnouncement"])
       return result["RESPONSE"]["RESULT"][0]["TrainAnnouncement"];
     } catch (error) {
       console.log("Could not request Trainstaions")
     }
-  }
-
-  function makeTimeTableList(result) {
-    let list = []
-
-    result.forEach((train) => {
-      if (!train.Deleted && train.Advertised) {
-        list.push({
-          name: train.AdvertisedLocationName,
-          signature: train.LocationSignature,
-          number: train.AdvertisedTrainIdent,
-          arival: train.AdvertisedTimeAtLocation
-        })
-      }
-    })
-    return list
   }
 
   return (
@@ -150,14 +128,18 @@ export default function App() {
               {(screenProps) => <Hitta
                 {...screenProps}
                 stations={stations}
-                setStationFrom={setStationFrom}
-                setStationTo={setStationTo}
                 getTimeTable={getTimeTable}
                 timeTable={timeTable}
               />}
             </Stack.Screen>
             <Stack.Screen name="Sena">
               {(screenProps) => <Sena
+                {...screenProps}
+                timeTable={timeTable}
+              />}
+            </Stack.Screen>
+            <Stack.Screen name="Karta">
+              {(screenProps) => <Karta
                 {...screenProps}
                 timeTable={timeTable}
               />}

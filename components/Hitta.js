@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { View, Text, StatusBar, TextInput, Pressable, FlatList, TouchableOpacity, } from 'react-native';
+import { View, Text, StatusBar, TextInput, Pressable, FlatList, TouchableOpacity } from 'react-native';
 import { IconButton } from 'react-native-paper';
 import SafeAreaView from 'react-native-safe-area-view';
 import { Base, Typography, Forms, Unique } from "../styles"
 
-export default function Hitta({ navigation, stations, setStationFrom, setStationTo, getTimeTable, timeTable }) {
+export default function Hitta({ navigation, stations, getTimeTable }) {
   const [travel, setTravel] = React.useState({})
   const [color, setColor] = React.useState({})
   const [autoCompleteTo, setAutoCompleteTo] = React.useState()
@@ -33,8 +33,8 @@ export default function Hitta({ navigation, stations, setStationFrom, setStation
     if (value != "") {
       let list = []
       stations.forEach((station) => {
-        if (station.name.toLowerCase().includes(value.toLowerCase())) {
-          list.push(station.name)
+        if (station.AdvertisedLocationName.toLowerCase().includes(value.toLowerCase())) {
+          list.push(station.AdvertisedLocationName)
         }
       })
       func(list)
@@ -48,17 +48,12 @@ export default function Hitta({ navigation, stations, setStationFrom, setStation
     let toSignature = ""
 
     stations.forEach((station) => {
-      if (station.name.toLowerCase() == travel.from.toLowerCase()) {
-        fromSignature = station.signature
-      } else if (station.name.toLowerCase() == travel.to.toLowerCase()) {
-        toSignature = station.signature
+      if (station.AdvertisedLocationName.toLowerCase() == travel.from.toLowerCase()) {
+        fromSignature = station.LocationSignature
+      } else if (station.AdvertisedLocationName.toLowerCase() == travel.to.toLowerCase()) {
+        toSignature = station.LocationSignature
       }
     })
-
-    if (fromSignature != "" && toSignature != "") {
-      setStationFrom({signature: fromSignature, name: travel.from})
-      setStationTo({signature: toSignature, name: travel.to})
-    }
 
     await getTimeTable(fromSignature, toSignature)
   }
@@ -71,7 +66,7 @@ export default function Hitta({ navigation, stations, setStationFrom, setStation
   }
 
   return (
-    <SafeAreaView style={[{ ...Base.center }, { marginBottom: 20 }]}>
+    <SafeAreaView style={[{ ...Base.center }]}>
       <StatusBar barStyle="light-content" backgroundColor="rgb(55, 0, 180)" />
       <Text style={[{ ...Typography.header }, { ...Typography.center }]}>
         För vilken sträcka vill du hitta försenade tåg?

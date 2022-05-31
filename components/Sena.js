@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { Text, StatusBar, View, ScrollView } from 'react-native';
+import { Text, StatusBar, View, ScrollView, TouchableOpacity } from 'react-native';
 import CheckBox from 'react-native-check-box'
 import SafeAreaView from 'react-native-safe-area-view';
 import { Base, Typography, Forms, Unique } from "../styles"
+import { IconButton } from 'react-native-paper';
 
 export default function Sena({ navigation, timeTable }) {
 
@@ -11,7 +12,50 @@ export default function Sena({ navigation, timeTable }) {
     const value = time.slice(0, -6)
     const date = new Date(value)
     const final = new Date(date.getTime() - 3600000 * mulitplier)
-    return final.getHours() + ":" + final.getMinutes()
+    let hours = ""
+    let mins = ""
+
+    if (final.getHours().toString().length == 1) {
+      hours = "0" + final.getHours()
+    } else {
+      hours = final.getHours()
+    }
+
+    if (final.getMinutes().toString().length == 1) {
+      mins = "0" + final.getMinutes()
+    } else {
+      mins = final.getMinutes()
+    }
+
+    return hours + ":" + mins
+  }
+
+  function calDelay(time, delay) {
+    const mulitplier = time[25]
+
+    const timeValue = time.slice(0, -6)
+    const timeDate = new Date(timeValue)
+
+    const delayValue = delay.slice(0, -6)
+    const delayDate = new Date(delayValue)
+
+    const timeFinal = new Date(timeDate.getTime() - 3600000 * mulitplier)
+    const delayFinal = new Date(delayDate.getTime() - 3600000 * mulitplier)
+
+    const final = new Date(delayFinal.getTime() - timeFinal.getTime())
+
+    var mins = Math.round(((final % 86400000) % 3600000) / 60000); // minutes
+
+    return mins + " min"
+  }
+
+  function decideContent(train) {
+    if (train.PlannedEstimatedTimeAtLocationIsValid) {
+      return calDelay(train.AdvertisedTimeAtLocation, train.PlannedEstimatedTimeAtLocation)
+    } else if (train.EstimatedTimeIsPreliminary) {
+      return calDelay(train.AdvertisedTimeAtLocation, train.EstimatedTimeAtLocation)
+    }
+      return "1 min"
   }
 
   const list = timeTable.map((train, index) => {
@@ -20,17 +64,17 @@ export default function Sena({ navigation, timeTable }) {
         <View style={{ ...Base.row }}>
           <View style={[{ ...Base.rowContent }, { ...Base.center }]}>
             <Text style={[{ ...Unique.sena }, { ...Typography.columnText }]}>
-              {train.number}
+              {train.AdvertisedTrainIdent}
             </Text>
           </View>
           <View style={[{ ...Base.rowContent }, { ...Base.center }]}>
             <Text style={[{ ...Unique.sena }, { ...Typography.columnText }]}>
-              {calTime(train.arival)}
+              {calTime(train.AdvertisedTimeAtLocation)}
             </Text>
           </View>
           <View style={[{ ...Base.rowContent }, { ...Base.center }]}>
             <Text style={[{ ...Unique.sena }, { ...Typography.columnText }]}>
-              Försenad
+              {decideContent(train)}
             </Text>
           </View>
         </View>
@@ -46,9 +90,7 @@ export default function Sena({ navigation, timeTable }) {
       </Text>
       <View style={{ ...Unique.allContainer }}>
         <CheckBox
-          onClick={() => {
-            console.log(timeTable)
-          }}
+          onClick={() => { }}
         />
         <Text>
           Alla tåg
@@ -72,11 +114,29 @@ export default function Sena({ navigation, timeTable }) {
             </Text>
           </View>
         </View>
-        <ScrollView style={{ height: '84%'}}>
-          {list.length ? list : (
-            <Text>No information</Text>
-          )}
-        </ScrollView>
+        <View style={{ height: '82%' }}>
+          <ScrollView style={{ height: '100%' }}>
+            {list.length ? list : (
+              <Text>No information</Text>
+            )}
+          </ScrollView>
+        </View>
+        <View style={[{ ...Base.row }, { ...Base.footer }]}>
+          <IconButton
+            icon="home"
+            style={{ ...Unique.senaButton }}
+            onPress={() => {
+              navigation.navigate("Hitta")
+            }}
+          />
+          <IconButton
+            icon="dots-horizontal"
+            style={{ ...Unique.senaButton }}
+            onPress={() => {
+              navigation.navigate("Karta")
+            }}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );

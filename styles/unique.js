@@ -44,3 +44,10 @@ export const allContainer = {
     paddingRight: 38,
     paddingBottom: 12
 }
+
+export const senaButton = {
+    height: 50,
+    width: 50,
+    backgroundColor: 'rgb(215, 215, 215)',
+    borderRadius: 3
+}

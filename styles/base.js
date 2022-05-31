@@ -30,3 +30,10 @@ export const travelRow = {
     width: '94%',
     backgroundColor: 'rgb(255, 255, 255)'
 }
+
+export const footer = {
+    width: '100%',
+    justifyContent: 'space-between',
+    position: 'absolute',
+    bottom: 0
+}
