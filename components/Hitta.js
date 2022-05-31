@@ -29,7 +29,7 @@ export default function Hitta({ navigation, stations, getTimeTable }) {
     setColor({ ...color, to: false })
   }
 
-  function handleTextEvent(value, func) {
+  function handleTextInput(value, func) {
     if (value != "") {
       let list = []
       stations.forEach((station) => {
@@ -60,13 +60,6 @@ export default function Hitta({ navigation, stations, getTimeTable }) {
     }
   }
 
-  async function trySok() {
-    setAutoCompleteFrom([])
-    setAutoCompleteTo([])
-    await trySearch()
-    navigation.navigate("Sena")
-  }
-
   return (
     <SafeAreaView style={[{ ...Base.center }]}>
       <StatusBar barStyle="light-content" backgroundColor="rgb(55, 0, 180)" />
@@ -89,7 +82,7 @@ export default function Hitta({ navigation, stations, getTimeTable }) {
             selectionColor={'rgb(20, 210, 190)'}
             onChangeText={(fromChange) => {
               setTravel({ ...travel, from: fromChange })
-              handleTextEvent(fromChange, setAutoCompleteFrom)
+              handleTextInput(fromChange, setAutoCompleteFrom)
             }}
             value={travel?.from}
             placeholder="Avg. station"
@@ -128,7 +121,7 @@ export default function Hitta({ navigation, stations, getTimeTable }) {
             selectionColor={'rgb(20, 210, 190)'}
             onChangeText={(toChange) => {
               setTravel({ ...travel, to: toChange })
-              handleTextEvent(toChange, setAutoCompleteTo)
+              handleTextInput(toChange, setAutoCompleteTo)
             }}
             value={travel?.to}
             placeholder="Ank. station"
@@ -172,8 +165,11 @@ export default function Hitta({ navigation, stations, getTimeTable }) {
         >
           <Pressable
             style={[{ ...Unique.sok }, { ...Base.center }]}
-            onPress={() => {
-              trySok()
+            onPress={async () => {
+              setAutoCompleteFrom([])
+              setAutoCompleteTo([])
+              await trySearch()
+              navigation.navigate("Sena")
             }}
           >
             <Text

@@ -57,7 +57,7 @@ export default function Sena({ navigation, timeTable }) {
     } else if (train.EstimatedTimeIsPreliminary) {
       return calDelay(train.AdvertisedTimeAtLocation, train.EstimatedTimeAtLocation)
     }
-      return "1 min"
+      return "0 min"
   }
 
   const list = timeTable.map((train, index) => {
