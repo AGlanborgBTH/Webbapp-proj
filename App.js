@@ -21,11 +21,12 @@ async function requestStations() {
   const content = "<REQUEST>" +
     `<LOGIN authenticationkey='${config.authenticationkey}'/>` +
     "<QUERY objecttype='TrainStation' schemaversion='1.4'>" +
-    "<FILTER/>" +
+    "<FILTER>" +
+    "<EQ name='Deleted' value='false' />" +
+    "<EQ name='Advertised' value='true' />" +
+    "</FILTER>" +
     "<INCLUDE>Prognosticated</INCLUDE>" +
     "<INCLUDE>AdvertisedLocationName</INCLUDE>" +
-    "<INCLUDE>Deleted</INCLUDE>" +
-    "<INCLUDE>Advertised</INCLUDE>" +
     "<INCLUDE>LocationSignature</INCLUDE>" +
     "</QUERY>" +
     "</REQUEST>";
@@ -40,7 +41,43 @@ async function requestStations() {
     });
     const result = await response.json();
 
-    return result["RESPONSE"]["RESULT"][0]["TrainStation"];
+    return result["RESPONSE"]["RESULT"][0]["TrainStation"]
+  } catch (error) {
+    console.log("Could not request Trainstaions")
+  }
+}
+
+async function getEvents() {
+  const result = await requestEvents()
+
+  return makeList(result)
+}
+
+async function requestEvents() {
+  const content = "<REQUEST>" +
+    `<LOGIN authenticationkey='${config.authenticationkey}'/>` +
+    "<QUERY objecttype='TrainMessage' schemaversion='1.7'>" +
+    "<FILTER>" +
+    "<EQ name='Deleted' value='false' />" +
+    "</FILTER>" +
+    "<INCLUDE>EventId</INCLUDE>" +
+    "<INCLUDE>Geometry.SWEREF99TM</INCLUDE>" +
+    "<INCLUDE>Geometry.WGS84</INCLUDE>" +
+    "<INCLUDE>Header</INCLUDE>" +
+    "</QUERY>" +
+    "</REQUEST>";
+
+  try {
+    const response = await fetch(`https://api.trafikinfo.trafikverket.se/v2/data.json`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/xml'
+      },
+      body: content
+    });
+    const result = await response.json();
+
+    return result["RESPONSE"]["RESULT"][0]["TrainMessage"]
   } catch (error) {
     console.log("Could not request Trainstaions")
   }
@@ -50,9 +87,7 @@ function makeList(result) {
   let list = []
 
   result.forEach((result) => {
-    if (!result.Deleted && result.Advertised) {
-      list.push(result)
-    }
+    list.push(result)
   })
 
   return list
@@ -60,10 +95,12 @@ function makeList(result) {
 
 export default function App() {
   const [stations, setStations] = React.useState([])
+  const [events, setEvents] = React.useState([])
   const [timeTable, setTimeTable] = React.useState([])
 
   React.useEffect(() => {
     getStations().then(setStations)
+    getEvents().then(setEvents)
   }, [])
 
   async function getTimeTable(from, to) {
@@ -85,12 +122,12 @@ export default function App() {
       "<EQ name='LocationSignature' value='" + signature + "' />" +
       "<EQ name='ActivityType' value='" + activity + "' />" +
       "<EQ name='Deleted' value='false' />" +
+      "<EQ name='Advertised' value='true' />" +
       "<IN name='ViaToLocation.LocationName' value='" + to + "' />" +
       "</AND>" +
       "</FILTER>" +
       "<INCLUDE>ActivityId</INCLUDE>" +
       "<INCLUDE>ActivityType</INCLUDE>" +
-      "<INCLUDE>Advertised</INCLUDE>" +
       "<INCLUDE>AdvertisedTrainIdent</INCLUDE>" +
       "<INCLUDE>AdvertisedTimeAtLocation</INCLUDE>" +
       "<INCLUDE>Canceled</INCLUDE>" +
@@ -112,8 +149,8 @@ export default function App() {
       });
 
       const result = await response.json();
-      console.log(result["RESPONSE"]["RESULT"][0]["TrainAnnouncement"])
-      return result["RESPONSE"]["RESULT"][0]["TrainAnnouncement"];
+
+      return result["RESPONSE"]["RESULT"][0]["TrainAnnouncement"]
     } catch (error) {
       console.log("Could not request Trainstaions")
     }
@@ -141,7 +178,7 @@ export default function App() {
             <Stack.Screen name="Karta">
               {(screenProps) => <Karta
                 {...screenProps}
-                timeTable={timeTable}
+                events={events}
               />}
             </Stack.Screen>
           </Stack.Navigator>

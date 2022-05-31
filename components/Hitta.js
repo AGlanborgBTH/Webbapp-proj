@@ -55,7 +55,9 @@ export default function Hitta({ navigation, stations, getTimeTable }) {
       }
     })
 
-    await getTimeTable(fromSignature, toSignature)
+    if (fromSignature != "" && toSignature != "") {
+      await getTimeTable(fromSignature, toSignature)
+    }
   }
 
   async function trySok() {

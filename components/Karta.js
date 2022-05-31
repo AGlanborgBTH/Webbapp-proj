@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, StatusBar, View, ScrollView } from 'react-native';
+import { StatusBar, View } from 'react-native';
 import SafeAreaView from 'react-native-safe-area-view';
 import { Base, Typography, Forms, Unique } from "../styles"
 import { IconButton } from 'react-native-paper';
@@ -7,8 +7,8 @@ import * as Location from 'expo-location'
 import MapView from 'react-native-maps';
 import { Marker } from "react-native-maps";
 
-export default function Sena({ navigation, timeTable }) {
-  const [marker, setMarker] = React.useState();
+export default function Sena({ navigation, events }) {
+  const [marker, setMarker] = React.useState([]);
   const [locationMarker, setLocationMarker] = React.useState();
 
   React.useEffect(() => {
@@ -34,24 +34,23 @@ export default function Sena({ navigation, timeTable }) {
   }, []);
 
   React.useEffect(() => {
-    (async () => {
-      const results = await getCoordinates(`${56.1612}, ${15.5869}`);
+    (() => {
+      let list = []
+      events.forEach(async (thing, index) => {
+        const str = thing.Geometry.WGS84.replace("POINT (", "").replace(")", "")
 
-      setMarker(<Marker
-        coordinate={{ latitude: parseFloat(results[0].lat), longitude: parseFloat(results[0].lon) }}
-        title="Test Marker"
-      />);
+        const coordinates = str.split(" ")
+
+        list.push(<Marker
+          key={index}
+          coordinate={{ latitude: parseInt(coordinates[1]), longitude: parseInt(coordinates[0]) }}
+          title={thing.Header}
+        />)
+      })
+
+      setMarker(list);
     })();
   }, []);
-
-  async function getCoordinates(address) {
-    const urlEncodedAddress = encodeURIComponent(address);
-    const url = "https://nominatim.openstreetmap.org/search.php?format=jsonv2&q=";
-    const response = await fetch(`${url}${urlEncodedAddress}`);
-    const result = await response.json();
-
-    return result;
-};
 
   return (
     <SafeAreaView>

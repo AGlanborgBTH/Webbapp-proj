@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, StatusBar, View, ScrollView, TouchableOpacity } from 'react-native';
+import { Text, StatusBar, View, ScrollView } from 'react-native';
 import CheckBox from 'react-native-check-box'
 import SafeAreaView from 'react-native-safe-area-view';
 import { Base, Typography, Forms, Unique } from "../styles"
@@ -50,7 +50,9 @@ export default function Sena({ navigation, timeTable }) {
   }
 
   function decideContent(train) {
-    if (train.PlannedEstimatedTimeAtLocationIsValid) {
+    if (train.Canceled) {
+      return "Inställt"
+    } else if (train.PlannedEstimatedTimeAtLocationIsValid) {
       return calDelay(train.AdvertisedTimeAtLocation, train.PlannedEstimatedTimeAtLocation)
     } else if (train.EstimatedTimeIsPreliminary) {
       return calDelay(train.AdvertisedTimeAtLocation, train.EstimatedTimeAtLocation)
